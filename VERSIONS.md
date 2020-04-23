@@ -1,9 +1,25 @@
 ## Versions
 
-4-Apr-2018
+14-November-2018
+ - [GE images provide more BIDS tags](https://github.com/rordenlab/dcm2niix/issues/163).
+ - [Bruker enhanced DICOM support](https://github.com/rordenlab/dcm2niix/issues/241).
+ - [Siemens Vida XA10 support](https://github.com/rordenlab/dcm2niix/issues/240). Note that Vida DICOM data is crippled [if the user exports as mosaics or anonymized/reduced](https://github.com/rordenlab/dcm2niix/issues/236).
+ - [UIH enhanced DICOM support](https://github.com/rordenlab/dcm2niix/issues/225).
+ - New DICOM [renaming](RENAMING.md) feature.
+
+22-June-2018
+ - [Fix issues where 6-June-2018 release could save Enhanced DICOM Philips bvec/bval with different order than .nii images](https://github.com/rordenlab/dcm2niix/issues/201).
+
+6-June-2018
  - [Improved Philips PAR/REC support](https://github.com/rordenlab/dcm2niix/issues/171)
- - [Improved Philips Enhanced DICOM support](https://github.com/rordenlab/dcm2niix/issues/170)
+ - [Improved Philips Enhanced
+ DICOM support](https://github.com/rordenlab/dcm2niix/issues/170) including saving different [real, imaginary, magnitude and phase images in a single DICOM file](https://github.com/rordenlab/dcm2niix/issues/189).
  - GE and Philips data now report [PhaseEncodingAxis](https://github.com/rordenlab/dcm2niix/issues/163) instead of PhaseEncodingDirection (these DICOMs store the dimension, but not the polarity).
+ - Experimental detection of [phase encoding direction for GE](https://github.com/rordenlab/dcm2niix/issues/163). To enable compile with "MY_DEBUG_GE" flag.
+ - Support for Philips Private RLE (1.3.46.670589.33.1.4.1) transfer syntax.
+ - Optional support for JPEG-LS (1.2.840.10008.1.2.4.80/1.2.840.10008.1.2.4.81) transfer syntaxes (using [CharLS](https://github.com/team-charls/charls)). Requires c++14.
+ - [Improved GE support](https://github.com/rordenlab/dcm2niix/issues/163)
+ - Optional [lossless integer scaling](https://github.com/rordenlab/dcm2niix/issues/198) for INT16 and UINT16 DICOM images that only use a fraction of the possible range.
 
 15-Dec-2017
  - Support [Siemens XA10 images](https://github.com/rordenlab/dcm2niix/pull/145).

@@ -7,21 +7,35 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      env: TARGET=lnx
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5 # support c++14
+      env:
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+         - TARGET=lnx
     - os: osx
+      osx_image: xcode8.3 # Tracvis default: OS X 10.12.6 and Xcode 8.3.3
       env: TARGET=mac
 
 before_install:
+  - eval "${MATRIX_EVAL}"
   - git submodule update --init --depth=3 dcm_qa
+  - git submodule update --init --depth=3 dcm_qa_nih
+  - git submodule update --init --depth=3 dcm_qa_uih
 
 script:
-  - mkdir build && cd build && cmake -DBATCH_VERSION=ON -DUSE_OPENJPEG=ON -DCMAKE_C_FLAGS="-mmmx -msse -msse2 -mfpmath=sse" -DCMAKE_CXX_FLAGS="-mmmx -msse -msse2 -mfpmath=sse" .. && make && cd -
+  # - mkdir build && cd build && cmake -DBATCH_VERSION=ON -DUSE_OPENJPEG=ON -DUSE_JPEGLS=true -DZLIB_IMPLEMENTATION=Cloudflare .. && make && cd -
+  - mkdir build && cd build && cmake -DBATCH_VERSION=OFF -DUSE_OPENJPEG=ON -DUSE_JPEGLS=true -DZLIB_IMPLEMENTATION=Cloudflare .. && make && cd -
   - export PATH=$PWD/build/bin:$PATH
   - cd dcm_qa && ./batch.sh && cd -
+  - cd dcm_qa_nih && ./batch.sh && cd -
+  - cd dcm_qa_uih && ./batch.sh && cd -
 
 before_deploy:
-  - export DATE=`date +%-d-%b-%Y`
-  - zip -j dcm2niix_${DATE}_${TARGET}.zip build/bin/*
+  - zip -j dcm2niix_${TARGET}.zip build/bin/*
   - sleep 300 # make sure appveyor deployment is done, thus proper release name is set
 
 deploy:

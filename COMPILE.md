@@ -2,9 +2,11 @@
 
 The README.md file describes the typical compilation of the software, using the `make` command to build the software. This document describes advanced methods for compiling and tuning the software.
 
+Beyond the complexity of compiling the software, the only downside to adding optional modules is that the dcm2niix executable size will require a tiny bit more disk space. For example, on MacOS the stripped basic executable is 238kb, miniz (GZip support) adds 18kb, NanoJPEG (lossy JPEG support) adds 13kb, CharLS (JPEG-LS support) adds 271kb, and OpenJPEG (JPEG2000 support) adds 192kb. So with all these features installed the executable weighs in at 732kb.
+
 ## Choosing your compiler
 
-The text below generally describes how to build dcm2niix using the [GCC](https://gcc.gnu.org) compiler using the `g++` command. However, the code is portable and you can use different compilers. For [clang/llvm](https://clang.llvm.org) compile using `clang++`.  If you have the [Intel C compiler](https://software.intel.com/en-us/c-compilers), you can substitute the `icc` command. For [Microsoft's C compiler](http://landinghub.visualstudio.com/visual-cpp-build-tools) you would use the `cl` command. In theory, the code should support other compilers, but this has not been tested. Be aware that if you do not have gcc installed the `g++` command may use a default to a compiler (e.g. clang). To check what compiler was used, run the dcm2niix software: it always reports the version and the compiler used for the build.
+The text below generally describes how to build dcm2niix using the [GCC](https://gcc.gnu.org) compiler using the `g++` command. However, the code is portable and you can use different compilers. For [clang/llvm](https://clang.llvm.org) compile using `clang++`.  If you have the [Intel C compiler](https://software.intel.com/en-us/c-compilers), you can substitute the `icc` command. The code is compatible with Microsoft's VS 2015 or later. For [Microsoft's C compiler](http://landinghub.visualstudio.com/visual-cpp-build-tools) you would use the `cl` command. In theory, the code should support other compilers, but this has not been tested. Be aware that if you do not have gcc installed the `g++` command may use a default to a compiler (e.g. clang). To check what compiler was used, run the dcm2niix software: it always reports the version and the compiler used for the build.
 
 ## Building the command line version without cmake
 
@@ -19,6 +21,11 @@ The following sub-sections list how you can modify this basic recipe for your ne
 ## Trouble Shooting
 
 Some [Centos/Redhat](https://github.com/rordenlab/dcm2niix/issues/137) may report "/usr/bin/ld: cannot find -lstdc++". This can be resolved by installing static versions of libstdc++:  `yum install libstdc++-static`.
+
+To compile with debugging symbols, use
+```
+cmake -DUSE_OPENJPEG=ON -DCMAKE_CXX_FLAGS=-g .. && make
+```
 
 ##### ZLIB BUILD
  If we have zlib, we can use it (-lz) and disable [miniz](https://code.google.com/p/miniz/) (-myDisableMiniZ)
@@ -50,6 +57,16 @@ By default, classic JPEG images will be decoded using the [compact NanoJPEG deco
 ```
 g++ -dead_strip -O3 -I. main_console.cpp nii_dicom.cpp jpg_0XC3.cpp ujpeg.cpp nifti1_io_core.cpp nii_ortho.cpp nii_dicom_batch.cpp nii_foreign.cpp -o dcm2niix -DmyDisableOpenJPEG -DmyTurboJPEG -I/opt/libjpeg-turbo/include /opt/libjpeg-turbo/lib/libturbojpeg.a
 ```
+
+##### JPEG-LS BUILD
+
+You can compile dcm2niix to convert DICOM images compressed with the [JPEG-LS](https://en.wikipedia.org/wiki/JPEG_2000) [transfer syntaxes 1.2.840.10008.1.2.4.80 and 1.2.840.10008.1.2.4.81](https://www.nitrc.org/plugins/mwiki/index.php/dcm2nii:MainPage#Transfer_Syntaxes_and_Compressed_Images). Decoding this format is handled by the [CharLS library](https://github.com/team-charls/charls), which is included with dcm2niix in the `charls` folder. The included code was downloaded from the CharLS website on 6 June 2018. To enable support you will need to include the `myEnableJPEGLS` compiler flag as well as a few file sin the `charls` folder. Therefore, a minimal compile (with just JPEG-LS and without JPEG2000) should look like this:
+
+`g++ -I. -DmyEnableJPEGLS  charls/jpegls.cpp charls/jpegmarkersegment.cpp charls/interface.cpp  charls/jpegstreamwriter.cpp charls/jpegstreamreader.cpp main_console.cpp nii_foreign.cpp nii_dicom.cpp jpg_0XC3.cpp ujpeg.cpp nifti1_io_core.cpp nii_ortho.cpp nii_dicom_batch.cpp  -o dcm2niix -DmyDisableOpenJPEG`
+
+Alternatively, you can decompress an image in JPEG-LS to an uncompressed DICOM using [gdcmconv](https://github.com/malaterre/GDCM)(e.g. `gdcmconv -w 3691459 3691459.dcm`). Or you can use gdcmconv compress a DICOM to JPEG-LS (e.g. `gdcmconv -L 3691459 3691459.dcm`). Alternatively, the DCMTK tool [dcmcjpls](https://support.dcmtk.org/docs/dcmcjpls.html) provides JPEG-LS support.
+
+
 
 ##### JPEG2000 BUILD
 
